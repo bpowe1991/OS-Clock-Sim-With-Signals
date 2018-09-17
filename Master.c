@@ -27,11 +27,13 @@ struct clock{
 
 int main(int argc, char *argv[]){
 
-    int opt, n = 0, i, s = 0, count = 0, character;
+    int opt, n = 0, s = 0, shmid;
+    struct clock *clockptr;
+    key_t key = 3670402;
 	pid_t childpid = 0;
 
     //Parsing options.
-    while((opt = getopt(argc, argv, "n:c:hp")) != -1){
+    while((opt = getopt(argc, argv, "n:s:hp")) != -1){
 		switch(opt){
 			
             //Option to enter number of processes.
@@ -60,7 +62,7 @@ int main(int argc, char *argv[]){
 				}
 				else{
                     s = atoi(optarg);
-                    if (s <= 0) {
+                    if (s <= 0 || s > 20) {
                         fprintf(stderr, "%s: Error: Entered illegal input for option -c\n",
 							argv[0]);
                         exit(-1);
@@ -106,8 +108,39 @@ int main(int argc, char *argv[]){
         exit(-1);
     }
     
+    //Creating shared memory segment.
+    if ((shmid = shmget(key, sizeof(struct clock), 0666|IPC_CREAT)) < 0) {
+        perror(strcat(argv[0],"Failed shmget allocation"));
+        exit(-1);
+    }
+
+    //Attaching to memory segment.
+    if ((clockptr = shmat(shmid, NULL, 0)) == (void *) -1) {
+        perror(strcat(argv[0],"Failed shmat attach"));
+        exit(-1);
+    }
     
-    
+    //Testing shared memory manipulation.
+    clockptr->millisec = 999;
+    clockptr->sec = 7;
+    fprintf(stderr, "%d sec, %d ms", clockptr->sec, clockptr->millisec);
+    clockptr->millisec = 0;
+    clockptr->sec = 15;
+    fprintf(stderr, "%d sec, %d ms", clockptr->sec, clockptr->millisec);
+
+    //Detaching from memory segment.
+    if (shmdt(clockptr) == -1) {
+      perror(strcat(argv[0],"Failed shmdt detach"));
+      clockptr = NULL;
+      exit(-1);
+   }
+
+   //Removing memory segment.
+   if (shmctl(shmid, IPC_RMID, 0) == -1) {
+      perror(strcat(argv[0],"Failed shmctl delete"));
+      exit(-1);
+   }
+  
     return 0;         
 }
 
