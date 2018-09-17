@@ -5,7 +5,7 @@ File: powe_proj1.c
 ------------------------------------------------------------------------
 Program Description:
 Takes in integer command line parameters for option -n and -c to output
-a nchars length string generated from stdin for n processes.
+a s length string generated from stdin for n processes.
 */
 
 #include <stdlib.h>
@@ -27,7 +27,7 @@ struct clock{
 
 int main(int argc, char *argv[]){
 
-    int opt, n = 0, i, nchars = 0, count = 0, character;
+    int opt, n = 0, i, s = 0, count = 0, character;
 	pid_t childpid = 0;
 
     //Parsing options.
@@ -51,16 +51,16 @@ int main(int argc, char *argv[]){
 				}
 				break;
             
-            //Option to enter nchars.
-            case 'c':
+            //Option to enter s.
+            case 's':
 				if(is_pos_int(optarg) == 1){
 					fprintf(stderr, "%s: Error: Entered illegal input for option -c\n",
 							argv[0]);
 					exit(-1);
 				}
 				else{
-                    nchars = atoi(optarg);
-                    if (nchars <= 0) {
+                    s = atoi(optarg);
+                    if (s <= 0) {
                         fprintf(stderr, "%s: Error: Entered illegal input for option -c\n",
 							argv[0]);
                         exit(-1);
@@ -70,15 +70,15 @@ int main(int argc, char *argv[]){
             
             //Help option.
             case 'h':
-                fprintf(stderr, "\nThis program creates n number of processes with the\n"\
-                                "-n option. The program then reads characters from stdin\n"\
-                                "and outputs the combined string for each process with the"\
-                                " -c option.\n\n"\
+                fprintf(stderr, "\nThis program creates n number of child processes with the\n"\
+                                "-n option. The maximum number of child processes allowed to \n"\
+                                "run concurrently is designated with the -s option. Each child\n"\
+                                " increments a timer in shared memory\n\n"\
                                 "OPTIONS:\n\n"\
                                 "-n Set the number of process to be entered. "\
-                                "(i.e. \"executible name\" -n 4 creates 4 processes).\n"\
-                                "-c Set the number of characters from stdin to be read. "\
-                                "(i.e. -c 4 allows n processes to read 4 characters).\n"\
+                                "(i.e. \"executible name\" -n 4 creates 4 children processes).\n"\
+                                "-s Set the number of children allowed to run at the same time."\
+                                "(i.e. -s 4 allows 4 child processes to run at the same time).\n"\
                                 "-h Bring up this help message.\n"\
                                 "-p Bring up a test error message.\n\n");
                 exit(0);
@@ -100,34 +100,13 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-    //Checking if n and nchars have valid integer values.
-    if (n <= 0 || nchars <= 0){
-        perror(strcat(argv[0], ": Error: Illegal parameter for -n or -c"));
+    //Checking if n and s have valid integer values.
+    if (n <= 0 || s <= 0){
+        perror(strcat(argv[0], ": Error: Illegal parameter for -n or -s"));
         exit(-1);
     }
     
-    char mybuf[(nchars+1)];
     
-    for (i = 0; i < n; i++){
-        if ((childpid = fork())){
-            break;
-        }
-    }
-
-    wait(NULL);    
-    
-    //Loop to get input from stdin.
-    fprintf(stderr, "Please enter %d characters:\n\n", nchars);
-    while (count < nchars){
-        while ((character = getchar()) != '\n'){
-            mybuf[count] = character;
-            count++;
-        }
-    }
-
-    //Add string terminating char and output.
-    mybuf[nchars] = '\0';
-    fprintf(stderr, "\n%ld: %s\n\n", (long)getpid(), mybuf);
     
     return 0;         
 }
