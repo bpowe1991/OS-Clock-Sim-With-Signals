@@ -56,15 +56,15 @@ int main(int argc, char *argv[]){
             //Option to enter s.
             case 's':
 				if(is_pos_int(optarg) == 1){
-					fprintf(stderr, "%s: Error: Entered illegal input for option -c\n",
+					fprintf(stderr, "%s: Error: Entered illegal input for option -s\n",
 							argv[0]);
 					exit(-1);
 				}
 				else{
                     s = atoi(optarg);
                     if (s <= 0 || s > 20) {
-                        fprintf(stderr, "%s: Error: Entered illegal input for option -c\n",
-							argv[0]);
+                        fprintf(stderr, "%s: Error: Entered illegal input for option -s:"\
+                                        " Cannot exceed 20\n", argv[0]);
                         exit(-1);
                     }
 				}
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]){
                 fprintf(stderr, "\nThis program creates n number of child processes with the\n"\
                                 "-n option. The maximum number of child processes allowed to \n"\
                                 "run concurrently is designated with the -s option. Each child\n"\
-                                " increments a timer in shared memory\n\n"\
+                                "increments a timer in shared memory\n\n"\
                                 "OPTIONS:\n\n"\
                                 "-n Set the number of process to be entered. "\
                                 "(i.e. \"executible name\" -n 4 creates 4 children processes).\n"\
@@ -120,12 +120,20 @@ int main(int argc, char *argv[]){
         exit(-1);
     }
     
-    //Testing shared memory manipulation.
-    clockptr->millisec = 999;
-    clockptr->sec = 7;
-    fprintf(stderr, "%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
-    clockptr->millisec = 0;
-    clockptr->sec = 15;
+    if ((childpid = fork()) < 0) {
+        perror(strcat(argv[0],"Failed to create child"));
+    }
+    else if (childpid == 0) {
+        fprintf(stderr, "Succesful fork");
+        char *args[]={"./Worker", (char)n, NULL};
+        if ((execvp(args[0], args)) == -1) {
+            perror(strcat(argv[0],"Failed to execvp child program"));
+            exit(-1);
+        }
+    }
+
+    wait(NULL);
+
     fprintf(stderr, "%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
 
     //Detaching from memory segment.
