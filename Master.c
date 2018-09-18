@@ -123,10 +123,10 @@ int main(int argc, char *argv[]){
     //Testing shared memory manipulation.
     clockptr->millisec = 999;
     clockptr->sec = 7;
-    fprintf(stderr, "%d sec, %d ms", clockptr->sec, clockptr->millisec);
+    fprintf(stderr, "%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
     clockptr->millisec = 0;
     clockptr->sec = 15;
-    fprintf(stderr, "%d sec, %d ms", clockptr->sec, clockptr->millisec);
+    fprintf(stderr, "%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
 
     //Detaching from memory segment.
     if (shmdt(clockptr) == -1) {

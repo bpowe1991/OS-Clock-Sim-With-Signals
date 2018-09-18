@@ -15,5 +15,5 @@ Worker: worker.o
 clean:
 	-rm -f *.o
 	-rm -f Master
-    -rm -f Worker
+	-rm -f Worker
 	-rm -f *.out
