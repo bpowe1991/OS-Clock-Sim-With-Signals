@@ -24,31 +24,37 @@ struct clock{
 };
 
 int main(int argc, char *argv[]){ 
-    int shmid, n;
+    int shmid, n = atoi(argv[1]), i;
     struct clock *clockptr;
     key_t key = 3670402;
 
-    fprintf(stderr, "In child. Value of n is %s", argv[1]);
-
     //Finding shared memory segment.
     if ((shmid = shmget(key, sizeof(struct clock), 0666|IPC_CREAT)) < 0) {
-        perror(strcat(argv[0],"Failed shmget allocation"));
+        perror(strcat(argv[0],": Error: Failed shmget find"));
         exit(-1);
     }
 
     //Attaching to memory segment.
     if ((clockptr = shmat(shmid, NULL, 0)) == (void *) -1) {
-        perror(strcat(argv[0],"Failed shmat attach"));
+        perror(strcat(argv[0],": Error: Failed shmat attach"));
         exit(-1);
     }
     
-    //Testing shared memory manipulation.
-    clockptr->millisec = 999;
-    clockptr->sec = 7;
+    //Incrementing clock in shared memory.
+    for (i = 0; i < (n*1000000); i++) {
+        if (clockptr->millisec == 999) {
+            clockptr->sec += 1;
+            clockptr->millisec = 0;
+            continue;
+        }
+        else {
+            clockptr->millisec += 1;
+        }
+    }
 
     //Detaching from memory segment.
     if (shmdt(clockptr) == -1) {
-      perror(strcat(argv[0],"Failed shmdt detach"));
+      perror(strcat(argv[0],": Error: Failed shmdt detach"));
       clockptr = NULL;
       exit(-1);
    }

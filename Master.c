@@ -110,24 +110,24 @@ int main(int argc, char *argv[]){
     
     //Creating shared memory segment.
     if ((shmid = shmget(key, sizeof(struct clock), 0666|IPC_CREAT)) < 0) {
-        perror(strcat(argv[0],"Failed shmget allocation"));
+        perror(strcat(argv[0],": Error: Failed shmget allocation"));
         exit(-1);
     }
 
     //Attaching to memory segment.
     if ((clockptr = shmat(shmid, NULL, 0)) == (void *) -1) {
-        perror(strcat(argv[0],"Failed shmat attach"));
+        perror(strcat(argv[0],": Error: Failed shmat attach"));
         exit(-1);
     }
-    
+
+    //Forking child.
     if ((childpid = fork()) < 0) {
-        perror(strcat(argv[0],"Failed to create child"));
+        perror(strcat(argv[0],": Error: Failed to create child"));
     }
     else if (childpid == 0) {
-        fprintf(stderr, "Succesful fork");
-        char *args[]={"./Worker", (char)n, NULL};
+        char *args[]={"./Worker", argv[2], NULL};
         if ((execvp(args[0], args)) == -1) {
-            perror(strcat(argv[0],"Failed to execvp child program"));
+            perror(strcat(argv[0],": Error: Failed to execvp child program\n"));
             exit(-1);
         }
     }
@@ -138,14 +138,14 @@ int main(int argc, char *argv[]){
 
     //Detaching from memory segment.
     if (shmdt(clockptr) == -1) {
-      perror(strcat(argv[0],"Failed shmdt detach"));
+      perror(strcat(argv[0],": Error: Failed shmdt detach"));
       clockptr = NULL;
       exit(-1);
    }
 
    //Removing memory segment.
    if (shmctl(shmid, IPC_RMID, 0) == -1) {
-      perror(strcat(argv[0],"Failed shmctl delete"));
+      perror(strcat(argv[0],": Error: Failed shmctl delete"));
       exit(-1);
    }
   
