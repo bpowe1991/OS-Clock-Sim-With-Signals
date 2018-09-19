@@ -24,6 +24,7 @@ struct clock{
 };
 
 int main(int argc, char *argv[]){ 
+    
     int shmid, n = atoi(argv[1]), i;
     struct clock *clockptr;
     key_t key = 3670402;
@@ -42,13 +43,12 @@ int main(int argc, char *argv[]){
     
     //Incrementing clock in shared memory.
     for (i = 0; i < (n*1000000); i++) {
+
+        clockptr->millisec += 1;
+        
         if (clockptr->millisec > 999) {
             clockptr->sec += (clockptr->millisec/1000);
             clockptr->millisec = (clockptr->millisec%1000);
-            continue;
-        }
-        else {
-            clockptr->millisec += 1;
         }
     }
 
@@ -58,8 +58,6 @@ int main(int argc, char *argv[]){
       clockptr = NULL;
       exit(-1);
    }
-
-    //fprintf(stderr, "Group ID: %ld\n", (long)getgid());
 
     return 0;
 

@@ -119,7 +119,7 @@ int main(int argc, char *argv[]){
         perror(strcat(argv[0],": Error: Failed shmat attach"));
         exit(-1);
     }
-    
+
     //Loop to fork children
     while (count < n){
         if (running == s) {
@@ -133,12 +133,15 @@ int main(int argc, char *argv[]){
         }
         else if (childpid == 0) {
             char *args[]={"./Worker", argv[2], NULL};
+            fprintf(stderr, "Before execv GID:%ld\n", (long)getgid());
             if ((execvp(args[0], args)) == -1) {
                 perror(strcat(argv[0],": Error: Failed to execvp child program\n"));
                 exit(-1);
             }
         }
         count++;
+        running++;
+        fprintf(stderr, "running: %d\n", running);
     }
     
     while ((wpid = wait(&status)) > 0);
