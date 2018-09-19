@@ -27,10 +27,10 @@ struct clock{
 
 int main(int argc, char *argv[]){
 
-    int opt, n = 0, s = 0, shmid;
+    int opt, n = 0, s = 0, shmid, status = 0, count = 0, running = 0;
     struct clock *clockptr;
     key_t key = 3670402;
-	pid_t childpid = 0;
+	pid_t childpid = 0, wpid;
 
     //Parsing options.
     while((opt = getopt(argc, argv, "n:s:hp")) != -1){
@@ -119,21 +119,29 @@ int main(int argc, char *argv[]){
         perror(strcat(argv[0],": Error: Failed shmat attach"));
         exit(-1);
     }
-
-    //Forking child.
-    if ((childpid = fork()) < 0) {
-        perror(strcat(argv[0],": Error: Failed to create child"));
-    }
-    else if (childpid == 0) {
-        char *args[]={"./Worker", argv[2], NULL};
-        if ((execvp(args[0], args)) == -1) {
-            perror(strcat(argv[0],": Error: Failed to execvp child program\n"));
-            exit(-1);
+    
+    //Loop to fork children
+    while (count < n){
+        if (running == s) {
+            wait(NULL);
+            running--;
         }
+        
+        //Forking child.
+        if ((childpid = fork()) < 0) {
+            perror(strcat(argv[0],": Error: Failed to create child"));
+        }
+        else if (childpid == 0) {
+            char *args[]={"./Worker", argv[2], NULL};
+            if ((execvp(args[0], args)) == -1) {
+                perror(strcat(argv[0],": Error: Failed to execvp child program\n"));
+                exit(-1);
+            }
+        }
+        count++;
     }
-
-    wait(NULL);
-
+    
+    while ((wpid = wait(&status)) > 0);
     fprintf(stderr, "%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
 
     //Detaching from memory segment.

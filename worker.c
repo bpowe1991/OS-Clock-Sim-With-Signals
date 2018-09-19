@@ -42,9 +42,9 @@ int main(int argc, char *argv[]){
     
     //Incrementing clock in shared memory.
     for (i = 0; i < (n*1000000); i++) {
-        if (clockptr->millisec == 999) {
-            clockptr->sec += 1;
-            clockptr->millisec = 0;
+        if (clockptr->millisec > 999) {
+            clockptr->sec += (clockptr->millisec/1000);
+            clockptr->millisec = (clockptr->millisec%1000);
             continue;
         }
         else {
@@ -59,6 +59,7 @@ int main(int argc, char *argv[]){
       exit(-1);
    }
 
+    //fprintf(stderr, "Group ID: %ld\n", (long)getgid());
 
     return 0;
 
