@@ -164,7 +164,7 @@ int main(int argc, char *argv[]){
         
         fprintf(stderr, "\nInterrupt!\nNumber of processes ran: %d\n", count);
         fprintf(stderr, "\n%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
-        kill(0, SIGQUIT);
+        kill(-getgid(), SIGQUIT);
 
         //Detaching from memory segment.
         if (shmdt(clockptr) == -1) {
