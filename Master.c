@@ -18,6 +18,7 @@ a s length string generated from stdin for n processes.
 #include <sys/ipc.h> 
 #include <sys/shm.h> 
 #include <signal.h>
+#include <assert.h>
 
 
 
@@ -27,18 +28,22 @@ struct clock {
 };
 
 int flag = 0;
+pid_t parent;
 
 int is_pos_int(char test_string[]);
 void alarmHandler();
 void interruptHandler();
+void sigquitHandler(int);
 
 int main(int argc, char *argv[]){
 
     signal(SIGINT,interruptHandler);
     signal(SIGALRM, alarmHandler);
+    signal(SIGQUIT, sigquitHandler);
     alarm(2);
     
     struct clock *clockptr;
+    char * workerArgPtr;
     int opt, n = 0, s = 0, shmid, status = 0, count = 0, running = 0;    
     key_t key = 3670402;
 	pid_t childpid = 0, wpid;
@@ -55,6 +60,7 @@ int main(int argc, char *argv[]){
 					exit(-1);
 				}
 				else{
+                    workerArgPtr = optarg;
                     n = atoi(optarg);
                     if (n <= 0) {
                         fprintf(stderr, "%s: Error: Entered illegal input for option -n\n",
@@ -143,7 +149,7 @@ int main(int argc, char *argv[]){
             perror(strcat(argv[0],": Error: Failed to create child"));
         }
         else if (childpid == 0) {
-            char *args[]={"./Worker", argv[2], NULL};
+            char *args[]={"./Worker", workerArgPtr, NULL};
             if ((execvp(args[0], args)) == -1) {
                 perror(strcat(argv[0],": Error: Failed to execvp child program\n"));
                 exit(-1);
@@ -158,7 +164,8 @@ int main(int argc, char *argv[]){
         
         fprintf(stderr, "\nInterrupt!\nNumber of processes ran: %d\n", count);
         fprintf(stderr, "\n%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
-        
+        kill(0, SIGQUIT);
+
         //Detaching from memory segment.
         if (shmdt(clockptr) == -1) {
             perror(strcat(argv[0],": Error: Failed shmdt detach"));
@@ -172,7 +179,6 @@ int main(int argc, char *argv[]){
             exit(-1);
         }
 
-        kill(getgid(), SIGKILL);
     }
     else {
         while ((wpid = wait(&status)) > 0);
@@ -214,4 +220,10 @@ void alarmHandler() {
 
 void interruptHandler() {
     flag = 1;
+}
+
+void sigquitHandler (int sig) {
+    assert(sig == SIGQUIT);
+    pid_t self = getpid();
+    if (parent != self) _exit(0);
 }
