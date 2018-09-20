@@ -17,18 +17,29 @@ a s length string generated from stdin for n processes.
 #include <sys/wait.h>
 #include <sys/ipc.h> 
 #include <sys/shm.h> 
+#include <signal.h>
 
-int is_pos_int(char test_string[]);
 
-struct clock{
+
+struct clock {
     int sec;
     int millisec;
 };
 
+int flag = 0;
+
+int is_pos_int(char test_string[]);
+void alarmHandler();
+void interruptHandler();
+
 int main(int argc, char *argv[]){
 
-    int opt, n = 0, s = 0, shmid, status = 0, count = 0, running = 0;
+    signal(SIGINT,interruptHandler);
+    signal(SIGALRM, alarmHandler);
+    alarm(2);
+    
     struct clock *clockptr;
+    int opt, n = 0, s = 0, shmid, status = 0, count = 0, running = 0;    
     key_t key = 3670402;
 	pid_t childpid = 0, wpid;
 
@@ -121,7 +132,7 @@ int main(int argc, char *argv[]){
     }
 
     //Loop to fork children
-    while (count < n){
+    while (count < n && flag == 0){
         if (running == s) {
             wait(NULL);
             running--;
@@ -133,33 +144,55 @@ int main(int argc, char *argv[]){
         }
         else if (childpid == 0) {
             char *args[]={"./Worker", argv[2], NULL};
-            fprintf(stderr, "Before execv GID:%ld\n", (long)getgid());
             if ((execvp(args[0], args)) == -1) {
                 perror(strcat(argv[0],": Error: Failed to execvp child program\n"));
                 exit(-1);
             }
         }
+        
         count++;
         running++;
-        fprintf(stderr, "running: %d\n", running);
     }
     
-    while ((wpid = wait(&status)) > 0);
-    fprintf(stderr, "%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
+    if (flag == 1) {
+        
+        fprintf(stderr, "\nInterrupt!\nNumber of processes ran: %d\n", count);
+        fprintf(stderr, "\n%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
+        
+        //Detaching from memory segment.
+        if (shmdt(clockptr) == -1) {
+            perror(strcat(argv[0],": Error: Failed shmdt detach"));
+            clockptr = NULL;
+            exit(-1);
+        }
 
-    //Detaching from memory segment.
-    if (shmdt(clockptr) == -1) {
-      perror(strcat(argv[0],": Error: Failed shmdt detach"));
-      clockptr = NULL;
-      exit(-1);
-   }
+        //Removing memory segment.
+        if (shmctl(shmid, IPC_RMID, 0) == -1) {
+            perror(strcat(argv[0],": Error: Failed shmctl delete"));
+            exit(-1);
+        }
 
-   //Removing memory segment.
-   if (shmctl(shmid, IPC_RMID, 0) == -1) {
-      perror(strcat(argv[0],": Error: Failed shmctl delete"));
-      exit(-1);
-   }
-  
+        kill(getgid(), SIGKILL);
+    }
+    else {
+        while ((wpid = wait(&status)) > 0);
+        fprintf(stderr, "Number of processes ran: %d\n", count);
+        fprintf(stderr, "%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
+
+        //Detaching from memory segment.
+        if (shmdt(clockptr) == -1) {
+            perror(strcat(argv[0],": Error: Failed shmdt detach"));
+            clockptr = NULL;
+            exit(-1);
+        }
+
+        //Removing memory segment.
+        if (shmctl(shmid, IPC_RMID, 0) == -1) {
+            perror(strcat(argv[0],": Error: Failed shmctl delete"));
+            exit(-1);
+        }
+    }
+    
     return 0;         
 }
 
@@ -174,3 +207,11 @@ int is_pos_int(char test_string[]){
 
 	return is_num;
 }        
+
+void alarmHandler() {
+    flag = 1;
+}
+
+void interruptHandler() {
+    flag = 1;
+}
