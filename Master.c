@@ -33,13 +33,12 @@ pid_t parent;
 int is_pos_int(char test_string[]);
 void alarmHandler();
 void interruptHandler();
-void sigquitHandler(int);
 
 int main(int argc, char *argv[]){
 
     signal(SIGINT,interruptHandler);
     signal(SIGALRM, alarmHandler);
-    signal(SIGQUIT, sigquitHandler);
+    signal(SIGQUIT, SIG_IGN);
     alarm(2);
     
     struct clock *clockptr;
@@ -160,43 +159,28 @@ int main(int argc, char *argv[]){
         running++;
     }
     
+    //Sending signal to all children
     if (flag == 1) {
-        
-        fprintf(stderr, "\nInterrupt!\nNumber of processes ran: %d\n", count);
-        fprintf(stderr, "\n%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
-        kill(-getgid(), SIGQUIT);
-
-        //Detaching from memory segment.
-        if (shmdt(clockptr) == -1) {
-            perror(strcat(argv[0],": Error: Failed shmdt detach"));
-            clockptr = NULL;
+        if (kill(-parent, SIGQUIT) == -1) {
+            perror(strcat(argv[0],": Error: Failed kill"));
             exit(-1);
         }
-
-        //Removing memory segment.
-        if (shmctl(shmid, IPC_RMID, 0) == -1) {
-            perror(strcat(argv[0],": Error: Failed shmctl delete"));
-            exit(-1);
-        }
-
     }
-    else {
-        while ((wpid = wait(&status)) > 0);
-        fprintf(stderr, "Number of processes ran: %d\n", count);
-        fprintf(stderr, "%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
 
-        //Detaching from memory segment.
-        if (shmdt(clockptr) == -1) {
-            perror(strcat(argv[0],": Error: Failed shmdt detach"));
-            clockptr = NULL;
-            exit(-1);
-        }
+    while ((wpid = wait(&status)) > 0);
+    fprintf(stderr, "\n%d sec, %d ms\n", clockptr->sec, clockptr->millisec);
 
-        //Removing memory segment.
-        if (shmctl(shmid, IPC_RMID, 0) == -1) {
-            perror(strcat(argv[0],": Error: Failed shmctl delete"));
-            exit(-1);
-        }
+    //Detaching from memory segment.
+    if (shmdt(clockptr) == -1) {
+        perror(strcat(argv[0],": Error: Failed shmdt detach"));
+        clockptr = NULL;
+        exit(-1);
+    }
+
+    //Removing memory segment.
+    if (shmctl(shmid, IPC_RMID, 0) == -1) {
+        perror(strcat(argv[0],": Error: Failed shmctl delete"));
+        exit(-1);
     }
     
     return 0;         
@@ -214,16 +198,12 @@ int is_pos_int(char test_string[]){
 	return is_num;
 }        
 
+//Signal handler for 2 sec alarm
 void alarmHandler() {
     flag = 1;
 }
 
+//Signal handler for Ctrl-C
 void interruptHandler() {
     flag = 1;
-}
-
-void sigquitHandler (int sig) {
-    assert(sig == SIGQUIT);
-    pid_t self = getpid();
-    if (parent != self) _exit(0);
 }

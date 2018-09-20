@@ -17,17 +17,23 @@ a s length string generated from stdin for n processes.
 #include <sys/wait.h>
 #include <sys/ipc.h> 
 #include <sys/shm.h> 
+#include <signal.h>
 
 struct clock{
     int sec;
     int millisec;
 };
 
+struct clock *clockptr;
+pid_t self;
+
+void sigQuitHandler(int);
+
 int main(int argc, char *argv[]){ 
-    
+    signal(SIGQUIT, sigQuitHandler);
     int shmid, n = atoi(argv[1]), i;
-    struct clock *clockptr;
     key_t key = 3670402;
+    self = getpid();
 
     //Finding shared memory segment.
     if ((shmid = shmget(key, sizeof(struct clock), 0666|IPC_CREAT)) < 0) {
@@ -60,5 +66,9 @@ int main(int argc, char *argv[]){
    }
 
     return 0;
+}
+
+void sigQuitHandler(int sig) {
+   exit(-1);
 }
    
