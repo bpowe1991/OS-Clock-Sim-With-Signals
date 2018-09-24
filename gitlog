@@ -1,0 +1,16 @@
+0000000000000000000000000000000000000000 f5783c5df3eab5287abb87869f0cc82e593a5d5b bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537217259 -0500	commit (initial): Created clock struct and added libraries
+f5783c5df3eab5287abb87869f0cc82e593a5d5b 2bcaa282fa9b7f22cdda5ea3e7aee0f1930fcad9 bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537223858 -0500	commit: Created getop options section
+2bcaa282fa9b7f22cdda5ea3e7aee0f1930fcad9 fc796009a22a5d7c664ecc0abcc77acec3048bd5 bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537228267 -0500	commit: Added shared memory functions.
+fc796009a22a5d7c664ecc0abcc77acec3048bd5 c1e74e9f329481af2d3688eb87615c25f27b7f42 bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537235386 -0500	commit: Added Makefile and worker.c file
+c1e74e9f329481af2d3688eb87615c25f27b7f42 e241d1e9588a691c6f0ac53c1d18d3da7c404fa4 bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537235629 -0500	commit: Running test on shared memory
+e241d1e9588a691c6f0ac53c1d18d3da7c404fa4 f5f6470921e334fb4a7575170df7ec273d264e82 bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537307672 -0500	commit: Added fork and execvp. worker.c access shared memory
+f5f6470921e334fb4a7575170df7ec273d264e82 b917723559e96f07267ced0d9f01d99b33cc391a bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537310695 -0500	commit: Added incrementing clock loop in child
+b917723559e96f07267ced0d9f01d99b33cc391a 97dcc0cdce6942f447d4d1eb34e5e99a6e74f6d2 bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537328240 -0500	commit: Created process loop for child fork in Master.c
+97dcc0cdce6942f447d4d1eb34e5e99a6e74f6d2 81f99056b9c2a5583ab3fc3778769ec6ea6b68c6 bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537383559 -0500	commit: Fixing incrementation in worker.c
+81f99056b9c2a5583ab3fc3778769ec6ea6b68c6 bb99c131d16f5757009a47ba19708ebb917eba9c bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537402115 -0500	commit: Added signals and handlers. (Interrupt issues)
+bb99c131d16f5757009a47ba19708ebb917eba9c 110f9939c0a2b5d2de9e0b2128445f86877bd64c bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537455731 -0500	commit: Working on kill command
+110f9939c0a2b5d2de9e0b2128445f86877bd64c f3d38cd7af2fc12fbfbd7a721bc4fab3e890cb18 bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537457697 -0500	commit: Testing kill command with interrupts
+f3d38cd7af2fc12fbfbd7a721bc4fab3e890cb18 c37fff271b7e674343d7dca69e45c9d021bb442e bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537466621 -0500	commit: Added signal handler for child to end.
+c37fff271b7e674343d7dca69e45c9d021bb442e 1089f377e2a55534363dff8cfc904fa777603eca bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537749094 -0500	commit: Added README file
+1089f377e2a55534363dff8cfc904fa777603eca b58fb94eea550d365e87709e7bb52457f4ae6971 bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537804528 -0500	commit: Changed exit to abort in child
+b58fb94eea550d365e87709e7bb52457f4ae6971 782cd241ca9f47a423b9963d9e9ac94e7fe667b6 bpowe1991 <36084040+bpowe1991@users.noreply.github.com> 1537805862 -0500	commit: Fixing header and testing shared memory
