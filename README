@@ -1,4 +1,9 @@
 Briton Powe
 README
 
-To run the program, enter ./Master -n <integer value> -s <integer value>. 
+To run the program, enter ./Master -n <positive integer> -s <positive integer>.
+
+The executible for child is called Worker. An alarm with 2 seconds is used to self
+terminate the program. Alarm is still affected by the scheduler, so the more processes 
+that are running, the slower the program is able to catch the alarm signal. The 
+program also terminates from Ctrl-C user input. 

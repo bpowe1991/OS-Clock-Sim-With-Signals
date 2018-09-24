@@ -1,11 +1,14 @@
 /*
-Programmer: Briton A. Powe          Program Homework Assignment #1
-Date: 9/7/18                        Class: Operating Systems
-File: powe_proj1.c
+Programmer: Briton A. Powe          Program Homework Assignment #2
+Date: 9/23/18                       Class: Operating Systems
+File: Master.c
 ------------------------------------------------------------------------
 Program Description:
-Takes in integer command line parameters for option -n and -c to output
-a s length string generated from stdin for n processes.
+Takes in integer command line parameters for option -n and -s to fork
+and execvp n number of processes, allowing only s to be run simultaneously.
+Program terminates children and self after catching a signal from a 
+2 sec alarm or user enters Ctrl-C. Before ending, program outputs integer
+values in shared memory and deallocates the shared memory segment. 
 */
 
 #include <stdlib.h>
@@ -20,8 +23,7 @@ a s length string generated from stdin for n processes.
 #include <signal.h>
 #include <assert.h>
 
-
-
+//Structure to be used in shared memory.
 struct clock {
     int sec;
     int millisec;

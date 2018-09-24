@@ -1,11 +1,11 @@
 /*
-Programmer: Briton A. Powe          Program Homework Assignment #1
-Date: 9/7/18                        Class: Operating Systems
-File: powe_proj1.c
+Programmer: Briton A. Powe          Program Homework Assignment #2
+Date: 9/23/18                       Class: Operating Systems
+File: worker.c
 ------------------------------------------------------------------------
 Program Description:
-Takes in integer command line parameters for option -n and -c to output
-a s length string generated from stdin for n processes.
+Worker program that reads an integer value from execvp and increments
+the variables of a struct in shared memory based on the integer.
 */
 
 #include <stdlib.h>
@@ -19,13 +19,13 @@ a s length string generated from stdin for n processes.
 #include <sys/shm.h> 
 #include <signal.h>
 
+//Structure in shared memory.
 struct clock{
     int sec;
     int millisec;
 };
 
 struct clock *clockptr;
-pid_t self;
 
 void sigQuitHandler(int);
 
@@ -33,7 +33,6 @@ int main(int argc, char *argv[]){
     signal(SIGQUIT, sigQuitHandler);
     int shmid, n = atoi(argv[1]), i;
     key_t key = 3670402;
-    self = getpid();
 
     //Finding shared memory segment.
     if ((shmid = shmget(key, sizeof(struct clock), 0666|IPC_CREAT)) < 0) {
@@ -68,6 +67,7 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
+//Handler for quit signal.
 void sigQuitHandler(int sig) {
    abort();
 }
