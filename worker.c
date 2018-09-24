@@ -69,6 +69,6 @@ int main(int argc, char *argv[]){
 }
 
 void sigQuitHandler(int sig) {
-   exit(-1);
+   abort();
 }
    
